@@ -864,6 +864,90 @@ const Eigen::MatrixXd & PostureTask::jacDot() const
   return jacDotMat_;
 }
 
+CoM6DTask::CoM6DTask(const rbd::MultiBody & mb, const sva::PTransformd & com)
+: com_(com), eval_(6), speed_(6), normalAcc_(6), jacMat_(6, mb.nrDof()), jacDotMat_(6, mb.nrDof())
+{
+}
+
+CoM6DTask::CoM6DTask(const rbd::MultiBody & mb, const sva::PTransformd & com, std::vector<double> weight)
+: com_(com), eval_(6), speed_(6), normalAcc_(6), jacMat_(6, mb.nrDof()),
+  jacDotMat_(6, mb.nrDof())
+{
+}
+
+void CoM6DTask::com(const sva::PTransformd & com)
+{
+  com_ = com;
+}
+
+const sva::PTransformd & CoM6DTask::com() const
+{
+  return com_;
+}
+
+const sva::PTransformd & CoM6DTask::actual() const
+{
+  return actual_;
+}
+
+
+void CoM6DTask::update(const rbd::MultiBody & mb, const rbd::MultiBodyConfig & mbc)
+{
+  actual_ = mbc.com;
+  const auto X_target_current = actual_ * com_.inv();
+  eval_ = sva::transformVelocity(X_target_current.inv()).vector();
+
+  speed_ = mbc.comVel.vector();
+  normalAcc_ = mbc.Jcomdot * rbd::dofToVector(mb, mbc.alpha)
+                      + sva::MotionVecd(Eigen::Vector3d::Zero(), mbc.comVel.angular().cross(mbc.comVel.linear())).vector();
+  jacMat_ = mbc.Jcom;
+}
+
+void CoM6DTask::update(const rbd::MultiBody & mb,
+                     const rbd::MultiBodyConfig & mbc,
+                     const sva::PTransformd &,
+                     const std::vector<sva::MotionVecd> &)
+{
+  actual_ = mbc.com;
+  const auto X_target_current = actual_ * com_.inv();
+  eval_ = sva::transformVelocity(X_target_current.inv()).vector();
+
+  speed_ = mbc.comVel.vector();
+  normalAcc_ = mbc.Jcomdot * rbd::dofToVector(mb, mbc.alpha)
+                      + sva::MotionVecd(Eigen::Vector3d::Zero(), mbc.comVel.angular().cross(mbc.comVel.linear())).vector();
+  jacMat_ = mbc.Jcom;
+}
+
+void CoM6DTask::updateDot(const rbd::MultiBody &, const rbd::MultiBodyConfig & mbc)
+{
+  jacDotMat_ = mbc.Jcomdot;
+}
+
+const Eigen::VectorXd & CoM6DTask::eval() const
+{
+  return eval_;
+}
+
+const Eigen::VectorXd & CoM6DTask::speed() const
+{
+  return speed_;
+}
+
+const Eigen::VectorXd & CoM6DTask::normalAcc() const
+{
+  return normalAcc_;
+}
+
+const Eigen::MatrixXd & CoM6DTask::jac() const
+{
+  return jacMat_;
+}
+
+const Eigen::MatrixXd & CoM6DTask::jacDot() const
+{
+  return jacDotMat_;
+}
+
 /**
  *													CoMTask
  */

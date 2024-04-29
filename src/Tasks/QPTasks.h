@@ -738,6 +738,38 @@ private:
   int robotIndex_;
 };
 
+class TASKS_DLLAPI CoM6DTask : public HighLevelTask
+{
+public:
+  CoM6DTask(const std::vector<rbd::MultiBody> & mbs, int robotIndex, const sva::PTransformd & com);
+  CoM6DTask(const std::vector<rbd::MultiBody> & mbs,
+          int robotIndex,
+          const sva::PTransformd & com,
+          std::vector<double> weight);
+
+  tasks::CoM6DTask & task() { return ct_; }
+
+  void com(const sva::PTransformd & com) { ct_.com(com); }
+
+  const sva::PTransformd & com() const { return ct_.com(); }
+
+  const sva::PTransformd & actual() const { return ct_.actual(); }
+
+  virtual int dim() override;
+  virtual void update(const std::vector<rbd::MultiBody> & mbs,
+                      const std::vector<rbd::MultiBodyConfig> & mbcs,
+                      const SolverData & data) override;
+
+  virtual const Eigen::MatrixXd & jac() const override;
+  virtual const Eigen::VectorXd & eval() const override;
+  virtual const Eigen::VectorXd & speed() const override;
+  virtual const Eigen::VectorXd & normalAcc() const override;
+
+private:
+  tasks::CoM6DTask ct_;
+  int robotIndex_;
+};
+
 class TASKS_DLLAPI CoMTask : public HighLevelTask
 {
 public:

@@ -1137,6 +1137,55 @@ const Eigen::VectorXd & PositionBasedVisServoTask::normalAcc() const
   return pbvst_.normalAcc();
 }
 
+CoM6DTask::CoM6DTask(const std::vector<rbd::MultiBody> & mbs, int rI, const sva::PTransformd & com)
+: ct_(mbs[rI], com), robotIndex_(rI)
+{
+}
+
+CoM6DTask::CoM6DTask(const std::vector<rbd::MultiBody> & mbs,
+                 int rI,
+                 const sva::PTransformd & com,
+                 std::vector<double> weight)
+: ct_(mbs[rI], com, std::move(weight)), robotIndex_(rI)
+{
+}
+
+
+int CoM6DTask::dim()
+{
+  return 6;
+}
+
+void CoM6DTask::update(const std::vector<rbd::MultiBody> & mbs,
+                     const std::vector<rbd::MultiBodyConfig> & mbcs,
+                     const SolverData & data)
+{
+  ct_.update(mbs[robotIndex_], mbcs[robotIndex_], mbcs[robotIndex_].com,
+             data.normalAccB(robotIndex_));
+}
+
+const Eigen::MatrixXd & CoM6DTask::jac() const
+{
+  return ct_.jac();
+}
+
+const Eigen::VectorXd & CoM6DTask::eval() const
+{
+  return ct_.eval();
+}
+
+const Eigen::VectorXd & CoM6DTask::speed() const
+{
+  return ct_.speed();
+}
+
+const Eigen::VectorXd & CoM6DTask::normalAcc() const
+{
+  return ct_.normalAcc();
+}
+
+
+
 /**
  *													CoMTask
  */

@@ -393,6 +393,41 @@ private:
   Eigen::MatrixXd jacDotMat_;
 };
 
+class TASKS_DLLAPI CoM6DTask
+{
+public:
+  CoM6DTask(const rbd::MultiBody & mb, const sva::PTransformd & com);
+  CoM6DTask(const rbd::MultiBody & mb, const sva::PTransformd & com, std::vector<double> weight);
+
+  void com(const sva::PTransformd & com);
+  const sva::PTransformd & com() const;
+  const sva::PTransformd & actual() const;
+
+  void update(const rbd::MultiBody & mb, const rbd::MultiBodyConfig & mbc);
+  void update(const rbd::MultiBody & mb,
+              const rbd::MultiBodyConfig & mbc,
+              const sva::PTransformd & com,
+              const std::vector<sva::MotionVecd> & normalAccB);
+  void updateDot(const rbd::MultiBody & mb, const rbd::MultiBodyConfig & mbc);
+
+  const Eigen::VectorXd & eval() const;
+  const Eigen::VectorXd & speed() const;
+  const Eigen::VectorXd & normalAcc() const;
+
+  const Eigen::MatrixXd & jac() const;
+  const Eigen::MatrixXd & jacDot() const;
+
+private:
+  sva::PTransformd com_;
+  sva::PTransformd actual_;
+
+  Eigen::VectorXd eval_;
+  Eigen::VectorXd speed_;
+  Eigen::VectorXd normalAcc_;
+  Eigen::MatrixXd jacMat_;
+  Eigen::MatrixXd jacDotMat_;
+};
+
 class TASKS_DLLAPI CoMTask
 {
 public:
