@@ -1160,6 +1160,7 @@ void CoM6DTask::update(const std::vector<rbd::MultiBody> & mbs,
                      const std::vector<rbd::MultiBodyConfig> & mbcs,
                      const SolverData & data)
 {
+  ct_.flight(flight_);
   ct_.update(mbs[robotIndex_], mbcs[robotIndex_], mbcs[robotIndex_].com,
              data.normalAccB(robotIndex_));
 }

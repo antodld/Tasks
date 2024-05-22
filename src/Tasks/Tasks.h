@@ -410,6 +410,11 @@ public:
               const std::vector<sva::MotionVecd> & normalAccB);
   void updateDot(const rbd::MultiBody & mb, const rbd::MultiBodyConfig & mbc);
 
+  void flight(const bool s)
+  {
+    flight_ = s;
+  }
+
   const Eigen::VectorXd & eval() const;
   const Eigen::VectorXd & speed() const;
   const Eigen::VectorXd & normalAcc() const;
@@ -420,6 +425,8 @@ public:
 private:
   sva::PTransformd com_;
   sva::PTransformd actual_;
+
+  bool flight_ = false;
 
   Eigen::VectorXd eval_;
   Eigen::VectorXd speed_;

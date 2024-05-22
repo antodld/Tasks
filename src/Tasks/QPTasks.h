@@ -755,6 +755,15 @@ public:
 
   const sva::PTransformd & actual() const { return ct_.actual(); }
 
+  const void flight(const bool s)
+  {
+    flight_ = s;
+  }
+  const bool flight()
+  {
+    return flight_;
+  }
+
   virtual int dim() override;
   virtual void update(const std::vector<rbd::MultiBody> & mbs,
                       const std::vector<rbd::MultiBodyConfig> & mbcs,
@@ -768,6 +777,7 @@ public:
 private:
   tasks::CoM6DTask ct_;
   int robotIndex_;
+  bool flight_ = false;
 };
 
 class TASKS_DLLAPI CoMTask : public HighLevelTask

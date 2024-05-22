@@ -900,7 +900,16 @@ void CoM6DTask::update(const rbd::MultiBody & mb, const rbd::MultiBodyConfig & m
   speed_ = mbc.comVel.vector();
   normalAcc_ = mbc.Jcomdot * rbd::dofToVector(mb, mbc.alpha)
                       + sva::MotionVecd(Eigen::Vector3d::Zero(), mbc.comVel.angular().cross(mbc.comVel.linear())).vector();
-  jacMat_ = mbc.Jcom;
+  if(flight_)
+  {
+    speed_ = rbd::centroidalInertiaDot(mb,mbc,com_.translation(),mbc.comVel.linear()) * mbc.comVel.vector();
+    const auto IcDotV = sva::ForceVecd(speed_);
+    normalAcc_ = mbc.JIdvDot * rbd::dofToVector(mb, mbc.alpha) 
+                  + sva::MotionVecd(Eigen::Vector3d::Zero(), IcDotV.force().cross(mbc.comVel.linear())).vector();
+    eval_.setZero();
+
+  }
+  jacMat_ = !flight_ ? mbc.Jcom : mbc.JIdv;
 }
 
 void CoM6DTask::update(const rbd::MultiBody & mb,
@@ -911,16 +920,24 @@ void CoM6DTask::update(const rbd::MultiBody & mb,
   actual_ = mbc.com;
   const auto X_target_current = actual_ * com_.inv();
   eval_ = sva::transformVelocity(X_target_current.inv()).vector();
-
   speed_ = mbc.comVel.vector();
   normalAcc_ = mbc.Jcomdot * rbd::dofToVector(mb, mbc.alpha)
                       + sva::MotionVecd(Eigen::Vector3d::Zero(), mbc.comVel.angular().cross(mbc.comVel.linear())).vector();
-  jacMat_ = mbc.Jcom;
+  if(flight_)
+  {
+    speed_ = rbd::centroidalInertiaDot(mb,mbc,com_.translation(),mbc.comVel.linear()) * mbc.comVel.vector();
+    const auto IcDotV = sva::ForceVecd(speed_);
+    normalAcc_ = mbc.JIdvDot * rbd::dofToVector(mb, mbc.alpha) 
+                  + sva::MotionVecd(Eigen::Vector3d::Zero(), IcDotV.force().cross(mbc.comVel.linear())).vector();
+    eval_.setZero();
+
+  }
+  jacMat_ = !flight_ ? mbc.Jcom : mbc.JIdv;
 }
 
 void CoM6DTask::updateDot(const rbd::MultiBody &, const rbd::MultiBodyConfig & mbc)
 {
-  jacDotMat_ = mbc.Jcomdot;
+  jacDotMat_ = !flight_ ? mbc.Jcomdot : mbc.JIdvDot;
 }
 
 const Eigen::VectorXd & CoM6DTask::eval() const
